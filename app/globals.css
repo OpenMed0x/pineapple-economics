@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-50;
+  }
+}
+
+/* 优化图表工具提示的微调 */
+.recharts-tooltip-cursor {
+  fill: rgba(30, 41, 59, 0.4) !important;
+}
