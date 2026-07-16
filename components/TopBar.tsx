@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, X, Command, Building2, Factory, Landmark, Globe2 } from 'lucide-react';
-import { useResearchStore } from '../store/researchStore';
+import { useResearchSearch } from '../store/researchStore';
 
 interface TopBarProps {
   onAddClick: () => void;
@@ -23,24 +23,15 @@ const categoryLabelMap: Record<string, string> = {
 
 export default function TopBar({ onAddClick }: TopBarProps) {
   const router = useRouter();
-  const { search } = useResearchStore();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ReturnType<typeof search>>([]);
+  const { results, isLoading: searching } = useResearchSearch(query);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchOpen && inputRef.current) inputRef.current.focus();
   }, [searchOpen]);
-
-  useEffect(() => {
-    if (query.trim()) {
-      setResults(search(query));
-    } else {
-      setResults([]);
-    }
-  }, [query, search]);
 
   // Esc 关闭 + 点击外部关闭
   useEffect(() => {
@@ -99,7 +90,11 @@ export default function TopBar({ onAddClick }: TopBarProps) {
         {/* 搜索结果下拉 */}
         {searchOpen && (
           <div className="absolute top-full mt-2 right-0 w-96 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-            {results.length > 0 ? (
+            {searching ? (
+              <div className="px-4 py-8 text-center">
+                <p className="text-xs text-slate-400">搜索中...</p>
+              </div>
+            ) : results.length > 0 ? (
               <>
                 <div className="px-4 py-2.5 border-b border-slate-100">
                   <span className="text-xs text-slate-400">找到 {results.length} 条结果</span>

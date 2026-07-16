@@ -4,6 +4,8 @@ import BrandLogo from "../components/BrandLogo";
 import SidebarNav from "../components/SidebarNav";
 import { NavProvider } from "../contexts/NavContext";
 import { Settings } from "lucide-react";
+import SWRProvider from '../components/SWRProvider';
+
 
 export const metadata: Metadata = {
   title: "pineapple economics - Financial Econometrics Terminal",
@@ -18,12 +20,13 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="bg-white text-slate-900 min-h-screen flex antialiased selection:bg-amber-200 selection:text-slate-900">
-        <NavProvider>
-          <aside className="w-64 border-r border-slate-200 bg-slate-50/70 backdrop-blur flex flex-col justify-between p-4 sticky top-0 h-screen z-10">
-            <div>
-              <BrandLogo />
-              <SidebarNav />
-            </div>
+        <SWRProvider>
+          <NavProvider>
+            <aside className="w-64 border-r border-slate-200 bg-slate-50/70 backdrop-blur flex flex-col justify-between p-4 sticky top-0 h-screen z-10">
+              <div>
+                <BrandLogo />
+                <SidebarNav />
+              </div>
 
             <div className="border-t border-slate-200 pt-4">
               <button className="flex w-full items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl text-sm font-medium transition-all">
@@ -36,6 +39,7 @@ export default function RootLayout({
             {children}
           </main>
         </NavProvider>
+        </SWRProvider>
       </body>
     </html>
   );

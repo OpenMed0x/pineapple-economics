@@ -7,14 +7,12 @@ import AddPanel from './AddPanel';
 import { EnterpriseData } from '../types/enterprise';
 import { IndustryData } from '../types/industry';
 import { AssetData } from '../types/asset';
-import { useResearchStore, ResearchRecord, ResearchData } from '../store/researchStore';
+import { useResearchRecords, ResearchRecord, ResearchData } from '../store/researchStore';
 import {
   Building2, Factory, Landmark, ArrowRight,
   Trash2, Clock, FolderOpen, ChevronLeft,
 } from 'lucide-react';
 import { isEnterpriseData, isIndustryData, isAssetData, isEconomistData, isRegionData } from '../lib/dataGuards';
-
-
 
 interface ResearchViewProps {
   category: string;
@@ -175,13 +173,15 @@ function RecordCard({
 
 export default function ResearchView({ category, categoryLabel, subItem }: ResearchViewProps) {
   const router = useRouter();
-  const { records, addRecord, deleteRecord } = useResearchStore();
+  // 关键改动：换成 useResearchRecords。不带 category/subItem 也能取全部数据，
+  // 但为了让"父级页面统计各子分类数量"的逻辑保持不变，这里不传参数，取整个 category 下的全部记录，
+  // 前端自己做筛选（原来的逻辑就是这样：一次性拿到 records，本地 filter）。
+  const { records, addRecord, deleteRecord, isLoading } = useResearchRecords(category);
   const [panelOpen, setPanelOpen] = useState(false);
 
   const hasSubs = Boolean(CATEGORIES_WITH_SUBS[category]);
 
   const filtered = records.filter(r => {
-    if (r.category !== category) return false;
     if (subItem) return r.subItem === subItem;
     if (hasSubs) return false;
     return true;
@@ -189,12 +189,12 @@ export default function ResearchView({ category, categoryLabel, subItem }: Resea
 
   const subCounts = hasSubs && !subItem
     ? CATEGORIES_WITH_SUBS[category].reduce<Record<string, number>>((acc, sub) => {
-        acc[sub] = records.filter(r => r.category === category && r.subItem === sub).length;
+        acc[sub] = records.filter(r => r.subItem === sub).length;
         return acc;
       }, {})
     : null;
 
-  const handleSubmit = (data: ResearchData, resolvedSubItem?: string) => {
+  const handleSubmit = async (data: ResearchData, resolvedSubItem?: string) => {
     let title = '未命名记录';
     if (isEnterpriseData(data))       title = data.basicInfo.companyName  || '未命名企业';
     else if (isIndustryData(data))    title = data.basicInfo.industryName || '未命名产业';
@@ -205,28 +205,26 @@ export default function ResearchView({ category, categoryLabel, subItem }: Resea
         : `${resolvedSubItem ?? subItem ?? '资产'} · ${dateStr}`;
     }
     else if (isRegionData(data)) {
-    title = data.title?.trim()
+      title = data.title?.trim()
         ? data.title
         : resolvedSubItem ?? subItem ?? "地区";
-   }
-   else if (isEconomistData(data)) {
-    title =
-      data.basicInfo.name?.trim()
-      || resolvedSubItem
-      || subItem
-      || "未命名经济学家";
-}  // 使经济学策略的前端标题显示为经济学家姓名，不同类型的数据，不能强行统一成一个title字段，行业、企业、经济学家等核心字段不一样，不能一概而论。
+    }
+    else if (isEconomistData(data)) {
+      title =
+        data.basicInfo.name?.trim()
+        || resolvedSubItem
+        || subItem
+        || "未命名经济学家";
+    }
+    // 使经济学策略的前端标题显示为经济学家姓名，不同类型的数据，不能强行统一成一个title字段，行业、企业、经济学家等核心字段不一样，不能一概而论。
 
-    const newRecord: ResearchRecord = {
-      id: Date.now().toString(),
+    const newRecord = await addRecord({
       category,
       subItem: resolvedSubItem ?? subItem,
       title,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       data,
-    };
-    addRecord(newRecord);
+    });
+
     setPanelOpen(false);
     router.push(`/research/${newRecord.id}`);
   };
@@ -244,6 +242,14 @@ export default function ResearchView({ category, categoryLabel, subItem }: Resea
       detail: { category, subItem: '' },
     }));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-sm text-slate-400">加载中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -319,9 +325,9 @@ export default function ResearchView({ category, categoryLabel, subItem }: Resea
       {category === 'asset' && !subItem && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {CATEGORIES_WITH_SUBS['asset'].map(sub => {
-            const count = records.filter(r => r.category === 'asset' && r.subItem === sub).length;
+            const count = records.filter(r => r.subItem === sub).length;
             const latestRecord = records
-              .filter(r => r.category === 'asset' && r.subItem === sub)
+              .filter(r => r.subItem === sub)
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
             return (

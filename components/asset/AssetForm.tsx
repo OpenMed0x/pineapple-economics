@@ -55,8 +55,8 @@ export default function AssetForm({ onSubmit, onCancel, initialData, subItem }: 
 
 
   const handleSubmit = () => {
-    const defaultTitle = `${new Date().toLocaleDateString('zh-CN')} ${subItem ?? '资产'}记录`;
-    const finalTitle = title.trim() !== '' ? title : defaultTitle;
+    const finalTitle = title.trim() !== '' 
+    ? title : `${new Date().toLocaleDateString('zh-CN')} ${subItem ?? '资产'}记录`;
 
     const data: AssetData = {
       id: initialData?.id ?? Date.now().toString(),

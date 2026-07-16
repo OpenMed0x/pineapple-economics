@@ -2,28 +2,29 @@
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useResearchStore } from '../../../store/researchStore';
-import { isEnterpriseData, isIndustryData } from '../../../lib/dataGuards';
+import { useResearchRecord, ResearchData } from '../../../store/researchStore';
+import { isEnterpriseData, isIndustryData, isEconomistData, isRegionData, isAssetData } from '../../../lib/dataGuards';
 import EnterpriseCard from '../../../components/enterprise/EnterpriseCard';
 import IndustryCard from '../../../components/industry/IndustryCard';
 import AddPanel from '../../../components/AddPanel';
-import { ResearchData } from '../../../store/researchStore';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import EconomistCard from '../../../components/economist/EconomistCard';
-import { isEconomistData } from '../../../lib/dataGuards';
 import RegionCard from '../../../components/region/RegionCard';
-import { isRegionData } from '../../../lib/dataGuards';
 import AssetCard from '../../../components/asset/AssetCard';
-import { isAssetData } from '../../../lib/dataGuards';
-
-
 
 export default function RecordDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { getById, updateRecord, deleteRecord } = useResearchStore();
-  const record = getById(id);
+  const { record, isLoading, updateRecord, deleteRecord } = useResearchRecord(id);
   const [panelOpen, setPanelOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-sm text-slate-400">加载中...</p>
+      </div>
+    );
+  }
 
   if (!record) {
     return (
@@ -34,16 +35,16 @@ export default function RecordDetailPage() {
     );
   }
 
-  const handleUpdate = (data: ResearchData) => {
+  const handleUpdate = async (data: ResearchData) => {
     let title = record.title;
     if (isEnterpriseData(data)) title = data.basicInfo.companyName || record.title;
     if (isIndustryData(data))   title = data.basicInfo.industryName || record.title;
-    updateRecord(record.id, { title, data });
+    await updateRecord({ title, data });
     setPanelOpen(false);
   };
 
-  const handleDelete = () => {
-    deleteRecord(record.id);
+  const handleDelete = async () => {
+    await deleteRecord();
     router.back();
   };
 
@@ -107,26 +108,26 @@ export default function RecordDetailPage() {
         />
       )}
       {isEconomistData(record.data) && (
-      <EconomistCard
-        data={record.data}
-        onEdit={() => setPanelOpen(true)}
-        onDelete={handleDelete}
-       />
-     )}
-     {isRegionData(record.data) && (
-      <RegionCard
-       data={record.data}
-       onEdit={() => setPanelOpen(true)}
-       onDelete={handleDelete}
-     />
-    )}
-    {isAssetData(record.data) && (
-     <AssetCard
-      data={record.data}
-      onEdit={() => setPanelOpen(true)}
-      onDelete={handleDelete}
-    />
-    )}
+        <EconomistCard
+          data={record.data}
+          onEdit={() => setPanelOpen(true)}
+          onDelete={handleDelete}
+        />
+      )}
+      {isRegionData(record.data) && (
+        <RegionCard
+          data={record.data}
+          onEdit={() => setPanelOpen(true)}
+          onDelete={handleDelete}
+        />
+      )}
+      {isAssetData(record.data) && (
+        <AssetCard
+          data={record.data}
+          onEdit={() => setPanelOpen(true)}
+          onDelete={handleDelete}
+        />
+      )}
 
       {/* 编辑面板 */}
       <AddPanel

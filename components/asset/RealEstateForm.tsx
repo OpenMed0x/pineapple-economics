@@ -75,11 +75,12 @@ const F = ({ label, value, onChange, placeholder, hint }: {
   </div>
 );
 
-const FM = ({ label, value, onChange, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string;
+const FM = ({ label, value, onChange, placeholder, hint }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; hint?: string;
 }) => (
   <div className="space-y-1">
     <label className="text-xs font-medium text-slate-500">{label}</label>
+    {hint && <span className="text-[10px] text-slate-300 font-mono">{hint}</span>}
     <textarea value={value} onChange={e => onChange(e.target.value)} rows={2}
       placeholder={placeholder}
       className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-amber-400 focus:bg-white transition-all resize-none placeholder:text-slate-300" />
@@ -305,7 +306,7 @@ function SubMarketForm({ value, onChange }: { value?: RESubMarket; onChange: (v:
 export default function RealEstateForm({ data, onChange }: Props) {
   const [layer, setLayer] = useState<'macro' | 'city' | 'submarket'>('macro');
   const [selectedGroupIdx, setSelectedGroupIdx] = useState(0);
-  const [selectedCityKey, setSelectedCityKey] = useState<string>('newYork');
+  const [selectedCityKey, setSelectedCityKey] = useState<keyof RealEstateData>('newYork');
 
   const set = <K extends keyof RealEstateData>(key: K) =>
     (val: RealEstateData[K]) => onChange({ ...data, [key]: val });
@@ -333,7 +334,7 @@ export default function RealEstateForm({ data, onChange }: Props) {
           {CITY_GROUPS.map((g, idx) => (
             <button key={g.id} onClick={() => {
               setSelectedGroupIdx(idx);
-              setSelectedCityKey((g.cities[0] as { key: string }).key);
+              setSelectedCityKey(g.cities[0].key as keyof RealEstateData);
             }}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${selectedGroupIdx === idx ? 'bg-slate-700 text-white' : 'text-slate-500 hover:bg-slate-100'}`}>
               {g.label}
@@ -346,7 +347,7 @@ export default function RealEstateForm({ data, onChange }: Props) {
       {layer === 'city' && (
         <div className="flex gap-1 flex-wrap px-1 py-1.5 border-b border-slate-100 shrink-0">
           {CITY_GROUPS[selectedGroupIdx].cities.map((c: { key: string; label: string }) => (
-            <button key={c.key} onClick={() => setSelectedCityKey(c.key)}
+            <button key={c.key} onClick={() => setSelectedCityKey(c.key as keyof RealEstateData)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${selectedCityKey === c.key ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}>
               {c.label}
             </button>
@@ -362,7 +363,7 @@ export default function RealEstateForm({ data, onChange }: Props) {
         )}
 
         {layer === 'city' && (() => {
-          const cityKey = selectedCityKey as keyof RealEstateData;
+          const cityKey = selectedCityKey;
           const cityLabel = CITY_GROUPS[selectedGroupIdx].cities.find(
             (c: { key: string; label: string }) => c.key === selectedCityKey
           )?.label ?? selectedCityKey;

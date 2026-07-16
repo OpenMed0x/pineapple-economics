@@ -196,6 +196,7 @@ export interface DetailedCommodityData {
   overallOutlook?: string; investmentSignal?: SignalStrength; analystNotes?: string;
   //大宗商品指数
   crbIndex?: string;
+  bloombergCommodity?: string;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -391,6 +392,7 @@ export interface CityREData {
   landPolicy?: string;             // 土地政策（供地节奏）
   housingSubsidy?: string;         // 住房补贴/保障房政策
   coolMeasures?: string;           // 冷却措施（限购/限贷等）
+  taxIncentive?: string;           // 税收优惠政策
 
   // ── 风险 ──
   bubbleIndex?: string;            // 泡沫指数（UBS RE Bubble Index）

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { AssetData, SignalStrength, CityREData } from '../../types/asset';
+import { AssetData, SignalStrength, CityREData, CommodityDetailItem } from '../../types/asset';
 import { Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AssetCardProps {
@@ -330,11 +330,17 @@ function BondCard({ data }: { data: AssetData }) {
   </>);
 }
 
+
 function CommodityCard({ data }: { data: AssetData }) {
   const d = data.commodity;
   if (!d) return null;
+  type CommodityKey = keyof typeof d;
 
-  const groups = [
+  const groups : {
+    label: string;
+    keys: readonly CommodityKey[];
+    labels: Partial<Record<CommodityKey, string>>;
+  }[] = [
     { label: '⛽ 能源', keys: ['wti','brent','henryHub','ttfGas','lng','diesel','gasoline','coal'] as const,
       labels: { wti:'WTI原油', brent:'Brent原油', henryHub:'天然气(HH)', ttfGas:'TTF天然气', lng:'LNG', diesel:'柴油', gasoline:'汽油', coal:'煤炭' } },
     { label: '🥇 贵金属', keys: ['gold','silver','platinum','palladium'] as const,
@@ -351,16 +357,19 @@ function CommodityCard({ data }: { data: AssetData }) {
 
   return (<>
     {groups.map(({ label, keys, labels }) => {
-      const filled = keys.filter(k => d[k]?.price || d[k]?.analystNotes);
+      const filled = keys.filter(k => {
+      const item = d[k] as CommodityDetailItem | undefined;
+  return item && (item.price || item.analystNotes);
+    });
       if (filled.length === 0) return null;
       return (
         <Section key={label} title={label} defaultOpen={false}>
           {filled.map(k => {
-            const item = d[k];
-            if (!item) return null;
-            return (
+             const item = d[k] as CommodityDetailItem | undefined;
+             if (!item) return null;
+             return (
               <div key={k} className="py-2 border-b border-slate-50 last:border-0">
-                <p className="text-xs font-semibold text-slate-600 mb-1">{(labels as Record<string, string>)[k]}</p>
+                <p className="text-xs font-semibold text-slate-600 mb-1">{labels[k]}</p>
                 <KV label="价格" value={item.price} />
                 <KV label="涨跌%" value={item.changePct} />
                 <KV label="52周最高" value={item.week52High} />
