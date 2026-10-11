@@ -5,7 +5,7 @@ import { useNav } from '../contexts/NavContext';
 import {
   LayoutDashboard, Building2, Factory, Landmark, Globe2,
   Lightbulb, BrainCircuit, Percent, ChevronDown, ChevronRight,
-  PieChart, Settings2
+  PieChart
 } from 'lucide-react';
 
 interface NavCategory {
@@ -24,7 +24,7 @@ const categories: NavCategory[] = [
   { id: 'strategy',   label: '经济学家策略',      icon: Lightbulb },
   { id: 'behavioral', label: '行为经济',          icon: BrainCircuit },
   { id: 'monetary',   label: '货币政策与通胀',    icon: Percent },
-  { id: 'portfolio',  label: '投资组合决策',      icon: PieChart },
+  { id: 'portfolio',  label: '投资组合决策',      icon: PieChart, children: ['Fin-lab 赚钱研究'] },
 ];
 
 export default function SidebarNav() {

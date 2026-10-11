@@ -13,7 +13,8 @@ import EconomistForm from './economist/EconomistForm';
 import RegionForm from './region/RegionForm';
 import AssetForm from './asset/AssetForm';
 import { AssetData } from '../types/asset';
-
+import PortfolioForm from './portfolio/PortfolioForm';
+import type { Portfolio } from '../types/portfolio';
 
 
 
@@ -23,7 +24,7 @@ interface AddPanelProps {
   category: string;
   subItem?: string;
   categoryLabel: string;
-  editingData?: ResearchData;
+  editingData?: ResearchData | Portfolio;
   onSubmit: (data: ResearchData, resolvedSubItem?: string) => void;
 }
 
@@ -88,6 +89,7 @@ const ADD_HINT: Record<string, string> = {
   strategy:   '添加经济学家策略',
   behavioral: '添加行为经济主题',
   monetary:   '添加货币政策议题',
+  portfolio:  '新建投资组合',
 };
 
 export default function AddPanel({
@@ -234,6 +236,7 @@ export default function AddPanel({
                 initialData={editingData as RegionData | undefined}
                 regionId={REGION_ID_MAP[activeSubItem] ?? 'us'}
               />
+
               ) : category === 'asset' ? (
               <AssetForm
                 onSubmit={handleSubmit}
@@ -241,6 +244,12 @@ export default function AddPanel({
                 initialData={editingData as AssetData | undefined}
                 subItem={activeSubItem}
               />
+            ) : category === 'portfolio' ? (
+              <PortfolioForm
+                onSubmit={(data) => onSubmit(data as unknown as ResearchData, activeSubItem)}
+                onCancel={onClose}
+                initialData={editingData as Portfolio | undefined}
+              />//投资组合的数据不是ResearchData,因此不能直接传handleSubmit，需要单独处理
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-400 px-6">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-2xl">

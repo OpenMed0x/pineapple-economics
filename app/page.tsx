@@ -7,8 +7,7 @@ import RegPanel from '../components/RegPanel';
 import ResearchView from '../components/ResearchView';
 import { useNav } from '../contexts/NavContext';
 import { Play, Pause, RefreshCw } from 'lucide-react';
-import { ResearchData } from '../store/researchStore';
-
+import PortfolioView from '../components/PortfolioView';
 
 interface DataPoint {
   time: string;
@@ -94,7 +93,12 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [isActive, chartData.length]);
 
-  // 非 Live Terminal 分类：渲染对应研究页面
+  // 投资组合：独立视图，不走 research_records 那套逻辑
+  if (selection.category === 'portfolio') {
+    return <PortfolioView subItem={selection.subItem} />;
+  }
+
+  // 其余分类：渲染通用研究页面
   if (selection.category !== 'live') {
     return (
       <ResearchView
