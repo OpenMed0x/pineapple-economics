@@ -6,13 +6,15 @@ import { IndustryData } from '../types/industry';
 import { EconomistData } from '../types/economist';
 import { RegionData } from '../types/region';
 import { AssetData } from '../types/asset';
+import { FinLabExperiment } from '../types/finLab';
 
 export type ResearchData =
   | EnterpriseData
   | IndustryData
   | EconomistData
   | RegionData
-  | AssetData;
+  | AssetData
+  | FinLabExperiment;
 
 export interface ResearchRecord {
   id: string;
